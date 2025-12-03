@@ -1,10 +1,18 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { WeatherLogsModule } from './weather-logs/weather-logs.module';
+import { MongooseModule } from '@nestjs/mongoose';
+import { UsersModule } from './users/users.module';
 
 @Module({
-  imports: [],
-  controllers: [AppController],
-  providers: [AppService],
+  imports: [
+    MongooseModule.forRoot(process.env.MONGODB_URI, {
+      serverSelectionTimeoutMS: 5000,
+      maxPoolSize: 10,
+    }),
+    WeatherLogsModule,
+    UsersModule,
+  ],
+  controllers: [],
+  providers: [],
 })
 export class AppModule {}
