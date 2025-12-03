@@ -3,11 +3,9 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
-	"github.com/rabbitmq/amqp091-go"
+	amqp "github.com/rabbitmq/amqp091-go"
 	"log"
 	"net/http"
-	"os"
 	"time"
 )
 
@@ -39,11 +37,11 @@ func processAndSendToAPI(messageBody []byte) {
 	}
 
 	client := http.Client{Timeout: 5 * time.Second}
-	
+
 	resp, err := client.Post(
 		NESTJS_API_URL,
 		"application/json",
-		bytes.NewBuffer(jsonBody),	
+		bytes.NewBuffer(jsonBody),
 	)
 
 	if err != nil {
@@ -52,8 +50,9 @@ func processAndSendToAPI(messageBody []byte) {
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusCreated && resp.StatusCode != http.StatusOK { 
-		
+	if resp.StatusCode != http.StatusCreated && resp.StatusCode != http.StatusOK {
+		log.Printf("Erro no servidor NestJS: %d", resp.StatusCode)
+		return
 	}
 
 	log.Printf("Simulando envio dos dados para NestJS: %s", string(messageBody))
@@ -86,7 +85,7 @@ func main() {
 	)
 	failOnError(err, "Falha ao declarar uma fila")
 
-	log.Printf("Esperando por mensagens na fila '%s'. Para sair, pressione CTRL+C", q.name)
+	log.Printf("Esperando por mensagens na fila '%s'. Para sair, pressione CTRL+C", q.Name)
 
 	msgs, err := ch.Consume(
 		q.Name,
@@ -103,9 +102,9 @@ func main() {
 
 	go func() {
 		for d := range msgs {
-			log.Printf("Mensagem Recebida: %s", d.body)
+			log.Printf("Mensagem Recebida: %s", d.Body)
 
-			processAndSendToAPI(d.body)
+			processAndSendToAPI(d.Body)
 
 			d.Ack(false)
 		}
@@ -113,4 +112,3 @@ func main() {
 	}()
 	<-forever
 }
-

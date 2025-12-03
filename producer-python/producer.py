@@ -1,4 +1,4 @@
-import requests, pika, time
+import requests, pika, time, pika.exceptions
 import json
 
 API_URL = "https://api.open-meteo.com/v1/forecast"
@@ -10,20 +10,20 @@ PARAMS = {
     "current_weather": "true",
     "timezone": "America/Sao_Paulo",
 }
-INTERVALO_SEGUNDOS = 60  
+INTERVALO_SEGUNDOS = 60
 
 
 def main_loop():
     while True:
         print("Iniciando nova iteração de coleta e envio de dados...")
-        
+
         queue_data = fetch_weather_data()
-        
+
         if queue_data:
             send_to_queue(queue_data)
         else:
             print("Coleta de dados falhou. Pulando envio para a fila.")
-        
+
         print(f"Ciclo finalizado. Dormindo por {INTERVALO_SEGUNDOS} segundos...")
         time.sleep(INTERVALO_SEGUNDOS)
 
@@ -72,7 +72,7 @@ def fetch_weather_data():
             "wind_velocity": wind_velocity,
             "timestamp": data["current_weather"]["time"],
         }
-        
+
         return queue_data
 
     except requests.exceptions.RequestException as e:
@@ -81,6 +81,7 @@ def fetch_weather_data():
     except KeyError as e:
         print(f"Erro ao extrair dados da resposta: Campo {e} não encontrado.")
         return None
-    
+
+
 if __name__ == "__main__":
     main_loop()
