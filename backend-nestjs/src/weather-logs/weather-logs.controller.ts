@@ -6,9 +6,12 @@ import {
   HttpStatus,
   UsePipes,
   ValidationPipe,
+  UseGuards,
+  Get,
 } from '@nestjs/common';
 import { WeatherLogsService } from './weather-logs.service';
-import { CreateWeatherLogDto } from './dto/create-weather-log.dto';
+import { CreateWeatherLogDto } from '../dto/create-weather-log.dto.ts';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('api/weather/logs')
 export class WeatherLogsController {
@@ -23,5 +26,11 @@ export class WeatherLogsController {
       message: 'Log de clima recebido e salvo com sucesso.',
       data: savedLog,
     };
+  }
+
+  @Get()
+  @UseGuards(AuthGuard('jwt'))
+  async findAllLogs() {
+    return await this.weatherLogsService.findAll();
   }
 }
